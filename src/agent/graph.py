@@ -1,6 +1,6 @@
 import os
 from typing import Literal
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import MessagesState, StateGraph, START, END
 from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.memory import MemorySaver
@@ -11,10 +11,10 @@ tools = [search_web, get_current_time]
 tool_node = ToolNode(tools)
 
 # 2. Setup LLM
-model = ChatOpenAI(
-    model="gpt-3.5-turbo",
+model = ChatGoogleGenerativeAI(
+    model="gemini-3.5-flash",  # Or "gemini-3.0-flash" for a different tier
     temperature=0.3,
-    api_key=os.environ.get("OPENAI_API_KEY")
+    google_api_key=os.environ.get("GEMINI_API_KEY")
 ).bind_tools(tools)
 
 # 3. Agent node
