@@ -1,5 +1,6 @@
 import os
 from typing import Literal
+from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import MessagesState, StateGraph, START, END
 from langgraph.prebuilt import ToolNode
@@ -11,11 +12,26 @@ tools = [search_web, get_current_time]
 tool_node = ToolNode(tools)
 
 # 2. Setup LLM
-model = ChatGoogleGenerativeAI(
-    model="gemini-3.5-flash",  # Or "gemini-3.0-flash" for a different tier
-    temperature=0.3,
-    google_api_key=os.environ.get("GEMINI_API_KEY")
-).bind_tools(tools)
+def get_model():
+    """Get the appropriate model based on environment variables."""
+    use_ollama = os.environ.get("USE_OLLAMA", "false").lower() == "true"
+    
+    if use_ollama:
+        # Use Ollama for testing/local development
+        return ChatOllama(
+            model=os.environ.get("OLLAMA_MODEL", "llama3.2:3b"),
+            base_url=os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434"),
+            temperature=0.3,
+        ).bind_tools(tools)
+    else:
+        # Use Gemini for production
+        return ChatGoogleGenerativeAI(
+            model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"),
+            temperature=0.3,
+            google_api_key=os.environ.get("GOOGLE_API_KEY"),
+        ).bind_tools(tools)
+
+model = get_model()
 
 # 3. Agent node
 def call_model(state: MessagesState):
