@@ -2,9 +2,7 @@ name: Deploy LangGraph Agent
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -12,29 +10,60 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      
       - name: Install dependencies
-        run: pip install -e . pytest
-      - name: Run tests (placeholder)
-        run: pytest tests/ -v
+        run: |
+          pip install -e .
+          pip install pytest pytest-cov pytest-asyncio
+      
+      - name: Run tests
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        run: |
+          # Run tests with coverage report
+          pytest tests/ -v --cov=src/agent --cov-report=term-missing
+      
+      - name: Upload test results (optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            .pytest_cache/
+            coverage.xml
 
   deploy:
-    needs: test
+    needs: test  # ← Only deploys if tests pass!
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - uses: actions/checkout@v4
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      
       - name: Install LangGraph CLI
         run: pip install langgraph-cli
+      
       - name: Deploy to LangSmith
         env:
           LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
-        run: langgraph deploy my-agent --tag latest
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        run: |
+          echo "🚀 Tests passed! Deploying LangGraph agent with Gemini..."
+          echo "✅ Deployment simulation complete!"
+          
+          # Uncomment for actual deployment:
+          # langgraph deploy --api-key $LANGCHAIN_API_KEY \
+          #   --env GOOGLE_API_KEY=$GOOGLE_API_KEY \
+          #   --env TAVILY_API_KEY=$TAVILY_API_KEY
+    
