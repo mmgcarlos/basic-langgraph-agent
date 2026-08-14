@@ -7,5 +7,6 @@
     "TAVILY_API_KEY": ""
   },
   "dependencies": ["."],
-  "python_version": "3.11"
+  "python_version": "3.11",
+  "image_distro": "wolfi"
 }
