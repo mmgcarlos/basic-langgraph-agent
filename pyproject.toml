@@ -4,7 +4,8 @@ version = "0.1.0"
 description = "A LangGraph agent with tools"
 authors = [{name = "Your Name", email = "your@email.com"}]
 dependencies = [
-    "langgraph>=0.0.20",
+    "langgraph>=0.0.20", 
+    "langgraph-checkpoint-sqlite>=1.0.0",
     "langchain-openai>=0.0.5",
     "langchain-google-genai>=1.0.0",
     "langchain-ollama>=0.1.0",
