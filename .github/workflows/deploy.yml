@@ -63,7 +63,7 @@ jobs:
           echo "✅ Deployment simulation complete!"
           
           # Uncomment for actual deployment:
-          # langgraph deploy --api-key $LANGCHAIN_API_KEY \
-          #   --env GEMINI_API_KEY=$GEMINI_API_KEY \
-          #   --env TAVILY_API_KEY=$TAVILY_API_KEY
+          langgraph deploy --api-key $LANGCHAIN_API_KEY \
+          --env GEMINI_API_KEY=$GEMINI_API_KEY \
+          --env TAVILY_API_KEY=$TAVILY_API_KEY
     
