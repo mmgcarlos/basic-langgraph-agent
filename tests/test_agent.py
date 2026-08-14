@@ -135,7 +135,7 @@ def test_ollama_tool_calling():
 # ============================================================
 
 @pytest.mark.skipif(USE_OLLAMA, reason="Only run with Gemini")
-@pytest.mark.skipif(not os.getenv("GOOGLE_API_KEY"), reason="No API key")
+@pytest.mark.skipif(not os.getenv("GEMINI_API_KEY"), reason="No API key")
 def test_gemini_tool_calls():
     """Test Gemini tool calling."""
     from src.agent.graph import graph
@@ -168,7 +168,7 @@ def test_time_tool():
     assert result is not None
     assert len(result) > 0
 
-@pytest.mark.skipif(not os.getenv("GOOGLE_API_KEY"), reason="No API key")
+@pytest.mark.skipif(not os.getenv("GEMINI_API_KEY"), reason="No API key")
 def test_agent_with_gemini():
     """Test agent with actual Gemini (skipped if no key)"""
     config = {"configurable": {"thread_id": "test-3"}}
