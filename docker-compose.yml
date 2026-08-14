@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-test
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    command: serve
+
+  test-runner:
+    image: python:3.11-slim
+    container_name: test-runner
+    depends_on:
+      - ollama
+    environment:
+      - USE_OLLAMA=true
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2:3b
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: >
+      sh -c "
+        pip install -e . &&
+        pip install pytest &&
+        python scripts/pull_model.py &&
+        pytest tests/ -v
+      "
+
+volumes:
+  ollama_data:
