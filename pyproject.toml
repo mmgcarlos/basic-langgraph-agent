@@ -1,0 +1,14 @@
+[project]
+name = "langgraph-agent"
+version = "0.1.0"
+description = "A LangGraph agent with tools"
+authors = [{name = "Your Name", email = "your@email.com"}]
+dependencies = [
+    "langgraph>=0.0.20",
+    "langchain-openai>=0.0.5",
+    "tavily-python>=0.3.0",
+    "python-dotenv>=1.0.0",
+]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
