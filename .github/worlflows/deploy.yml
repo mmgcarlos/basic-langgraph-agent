@@ -1,1 +1,40 @@
+name: Deploy LangGraph Agent
 
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -e . pytest
+      - name: Run tests (placeholder)
+        run: pytest tests/ -v
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install LangGraph CLI
+        run: pip install langgraph-cli
+      - name: Deploy to LangSmith
+        env:
+          LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
+        run: langgraph deploy my-agent --tag latest
