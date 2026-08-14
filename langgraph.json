@@ -1,0 +1,11 @@
+{
+  "graphs": {
+    "agent": "./src/agent/graph.py:graph"
+  },
+  "env": {
+    "GOOGLE_API_KEY": "",
+    "TAVILY_API_KEY": ""
+  },
+  "dependencies": ["."],
+  "python_version": "3.11"
+}
