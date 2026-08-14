@@ -58,3 +58,32 @@ workflow.add_edge("tools", "agent")
 # 6. Compile with memory
 memory = MemorySaver()
 graph = workflow.compile(checkpointer=memory)
+
+# 7. Convenience functions
+def invoke_agent(query: str, thread_id: str = "default") -> str:
+    """Invoke the agent with a query and thread ID."""
+    config = {"configurable": {"thread_id": thread_id}}
+    result = graph.invoke(
+        {"messages": [("user", query)]},
+        config
+    )
+    
+    # Extract response text
+    last_message = result["messages"][-1]
+    if isinstance(last_message.content, list):
+        return " ".join([
+            part.get('text', '') 
+            for part in last_message.content 
+            if part.get('type') == 'text'
+        ])
+    return last_message.content
+
+def reset_memory():
+    """Reset all memory (careful!)."""
+    import os
+    db_path = os.environ.get("CHECKPOINT_DB", "checkpoints.db")
+    if os.path.exists(db_path):
+        os.remove(db_path)
+        print(f"🧹 Reset memory: {db_path}")
+    else:
+        print("ℹ️ No memory file found")
