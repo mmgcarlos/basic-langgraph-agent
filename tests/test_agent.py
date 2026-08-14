@@ -149,7 +149,8 @@ def test_gemini_tool_calls():
     content_text = extract_text(last_message.content)
     
     # Gemini might call search tool or respond directly
-    assert len(content_text) > 0    result = graph.invoke(
+    assert len(content_text) > 0
+    result = graph.invoke(
         {"messages": [("user", "What's the current date and time?")]},
         config
     )
