@@ -10,17 +10,27 @@ def test_graph_import():
     """Test that the graph loads properly"""
     assert graph is not None
 
+# /tests/test_agent.py
 def test_basic_query():
     """Test agent responds to simple queries"""
+    from src.agent.graph import graph
+    
     config = {"configurable": {"thread_id": "test-1"}}
     result = graph.invoke(
         {"messages": [("user", "What is the capital of France?")]},
         config
     )
     last_message = result["messages"][-1]
-    assert "Paris" in last_message.content
+    
+    # Extract text content (handles both string and list formats)
+    if isinstance(last_message.content, list):
+        content_text = " ".join([part.get('text', '') for part in last_message.content if part.get('type') == 'text'])
+    else:
+        content_text = last_message.content
+    
+    assert "Paris" in content_text
     assert not last_message.tool_calls  # Shouldn't need tools
-
+    
 def test_tool_call():
     """Test agent uses tools when needed"""
     config = {"configurable": {"thread_id": "test-2"}}
