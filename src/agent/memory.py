@@ -26,6 +26,7 @@ def init_database():
         CREATE TABLE IF NOT EXISTS checkpoints (
             thread_id TEXT NOT NULL,
             checkpoint_id TEXT NOT NULL,
+            parent_checkpoint_id TEXT,
             created_at TEXT NOT NULL,
             state BLOB,
             PRIMARY KEY (thread_id, checkpoint_id)
