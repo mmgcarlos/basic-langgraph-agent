@@ -16,31 +16,6 @@ def get_connection():
     """Get SQLite connection."""
     return sqlite3.connect(get_db_path())
 
-def init_database():
-    """Initialize the database if it doesn't exist."""
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    # Create checkpoints table if it doesn't exist
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS checkpoints (
-            thread_id TEXT NOT NULL,
-            checkpoint_id TEXT NOT NULL,
-            parent_checkpoint_id TEXT,
-            created_at TEXT NOT NULL,
-            state BLOB,
-            PRIMARY KEY (thread_id, checkpoint_id)
-        )
-    """)
-    
-    # Create index for faster queries
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_thread_id ON checkpoints(thread_id)
-    """)
-    
-    conn.commit()
-    conn.close()
-
 def get_conversation_summary(thread_id: str) -> Dict[str, Any]:
     """Get a summary of a conversation."""
     messages = get_conversation_messages(thread_id)
@@ -184,7 +159,6 @@ def clear_all_conversations() -> int:
 
 __all__ = [
     'get_db_path',
-    'init_database',
     'list_conversations',
     'get_conversation_messages',
     'get_conversation_summary',
