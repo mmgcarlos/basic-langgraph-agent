@@ -146,5 +146,13 @@ def get_conversation_summary(thread_id: str) -> Dict[str, Any]:
         "messages": messages
     }
 
-# Initialize database on import
-init_database()
+__all__ = [
+    'get_db_path',
+    'init_database',
+    'list_conversations',
+    'get_conversation_messages',
+    'get_conversation_summary',
+    'get_conversation_count',
+    'clear_conversation',
+    'clear_all_conversations',
+]
