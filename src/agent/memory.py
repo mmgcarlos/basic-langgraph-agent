@@ -4,11 +4,17 @@ import os
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-DB_PATH = os.environ.get("CHECKPOINT_DB", "checkpoints.db")
-
+def get_db_path():
+    """Get the database path with directory creation."""
+    db_path = os.environ.get("CHECKPOINT_DB", "checkpoints.db")
+    db_dir = os.path.dirname(db_path)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
+    return db_path
+    
 def get_connection():
     """Get SQLite connection."""
-    return sqlite3.connect(DB_PATH)
+    return sqlite3.connect(get_db_path())
 
 def init_database():
     """Initialize the database if it doesn't exist."""
