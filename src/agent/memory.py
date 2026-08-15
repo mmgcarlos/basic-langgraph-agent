@@ -114,6 +114,35 @@ def clear_conversation(thread_id: str) -> bool:
     conn.close()
     return deleted
 
+def get_conversation_count() -> int:
+    """Get total number of conversations."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT COUNT(DISTINCT thread_id) FROM checkpoints")
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count
+
+# ============================================================
+# CLEAR FUNCTIONS
+# ============================================================
+
+def clear_conversation(thread_id: str) -> bool:
+    """Clear a specific conversation."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        "DELETE FROM checkpoints WHERE thread_id = ?",
+        (thread_id,)
+    )
+    
+    deleted = cursor.rowcount > 0
+    conn.commit()
+    conn.close()
+    return deleted
+
 def clear_all_conversations() -> int:
     """Clear all conversations."""
     conn = get_connection()
@@ -124,27 +153,6 @@ def clear_all_conversations() -> int:
     conn.commit()
     conn.close()
     return deleted
-
-def get_conversation_summary(thread_id: str) -> Dict[str, Any]:
-    """Get a summary of a conversation."""
-    messages = get_conversation_messages(thread_id)
-    
-    if not messages:
-        return {"error": "Conversation not found"}
-    
-    # Get first user message as title
-    title = "New Conversation"
-    for msg in messages:
-        if msg["role"] == "user":
-            title = msg["content"][:50] + ("..." if len(msg["content"]) > 50 else "")
-            break
-    
-    return {
-        "thread_id": thread_id,
-        "title": title,
-        "message_count": len(messages),
-        "messages": messages
-    }
 
 __all__ = [
     'get_db_path',
