@@ -24,8 +24,6 @@ def get_conversation_summary(thread_id: str) -> Dict[str, Any]:
         "messages": messages
     }
 
-def list_conversations() -> List[Dict[str, Any]]:
-
 def get_conversation_messages(thread_id: str) -> List[Dict[str, Any]]:
     """Get all messages from a conversation."""
     from langchain_core.messages import HumanMessage, AIMessage
@@ -60,11 +58,6 @@ def get_conversation_messages(thread_id: str) -> List[Dict[str, Any]]:
                 "tool_calls": bool(msg.tool_calls)
             
 __all__ = [
-    'get_db_path',
-    'list_conversations',
     'get_conversation_messages',
     'get_conversation_summary',
-    'get_conversation_count',
-    'clear_conversation',
-    'clear_all_conversations',
 ]
