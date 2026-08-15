@@ -1,13 +1,11 @@
 import os
-import sqlite3
 from typing import Literal
 from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import MessagesState, StateGraph, START, END
 from langgraph.prebuilt import ToolNode
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.memory import MemorySaver
 from .tools import search_web, get_current_time
-from .memory import get_db_path
 
 # 1. Define tools
 tools = [search_web, get_current_time]
@@ -58,11 +56,9 @@ workflow.add_conditional_edges("agent", should_continue)
 workflow.add_edge("tools", "agent")
 
 # 6. Compile with memory
-db_path = get_db_path()
-conn = sqlite3.connect(db_path)
-sqlMemory = SqliteSaver(conn)
-sqlMemory.setup()
-graph = workflow.compile(checkpointer=sqlMemory)
+
+memory = MemorySaver()
+graph = workflow.compile(checkpointer=memory)
 
 # 7. Convenience functions
 def invoke_agent(query: str, thread_id: str = "default") -> str:
@@ -82,13 +78,3 @@ def invoke_agent(query: str, thread_id: str = "default") -> str:
             if part.get('type') == 'text'
         ])
     return last_message.content
-
-def reset_memory():
-    """Reset all memory (careful!)."""
-    import os
-    db_path = os.environ.get("CHECKPOINT_DB", "checkpoints.db")
-    if os.path.exists(db_path):
-        os.remove(db_path)
-        print(f"🧹 Reset memory: {db_path}")
-    else:
-        print("ℹ️ No memory file found")
