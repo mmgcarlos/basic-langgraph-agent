@@ -1,4 +1,5 @@
 import os
+import sqlite3
 from typing import Literal
 from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -58,7 +59,8 @@ workflow.add_edge("tools", "agent")
 
 # 6. Compile with memory
 db_path = get_db_path()
-sqlMemory = SqliteSaver.from_conn_string(db_path)
+conn = sqlite3.connect(db_path)
+sqlMemory = SqliteSaver(conn)
 graph = workflow.compile(checkpointer=sqlMemory)
 
 # 7. Convenience functions
