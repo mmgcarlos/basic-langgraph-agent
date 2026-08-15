@@ -1,20 +1,7 @@
 """Memory management utilities for the agent."""
-import sqlite3
 import os
 from typing import List, Dict, Any, Optional
 from datetime import datetime
-
-def get_db_path():
-    """Get the database path with directory creation."""
-    db_path = os.environ.get("CHECKPOINT_DB", "checkpoints.db")
-    db_dir = os.path.dirname(db_path)
-    if db_dir:
-        os.makedirs(db_dir, exist_ok=True)
-    return db_path
-    
-def get_connection():
-    """Get SQLite connection."""
-    return sqlite3.connect(get_db_path())
 
 def get_conversation_summary(thread_id: str) -> Dict[str, Any]:
     """Get a summary of a conversation."""
@@ -38,33 +25,6 @@ def get_conversation_summary(thread_id: str) -> Dict[str, Any]:
     }
 
 def list_conversations() -> List[Dict[str, Any]]:
-    """List all conversations with metadata."""
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute("""
-        SELECT 
-            thread_id,
-            COUNT(*) as message_count,
-            MIN(created_at) as started_at,
-            MAX(created_at) as last_updated
-        FROM checkpoints 
-        GROUP BY thread_id
-        ORDER BY last_updated DESC
-    """)
-    
-    rows = cursor.fetchall()
-    conn.close()
-    
-    return [
-        {
-            "thread_id": row[0],
-            "message_count": row[1],
-            "started_at": row[2],
-            "last_updated": row[3]
-        }
-        for row in rows
-    ]
 
 def get_conversation_messages(thread_id: str) -> List[Dict[str, Any]]:
     """Get all messages from a conversation."""
@@ -98,65 +58,7 @@ def get_conversation_messages(thread_id: str) -> List[Dict[str, Any]]:
                 "content": content,
                 "type": "ai",
                 "tool_calls": bool(msg.tool_calls)
-            })
-    
-    return messages
-
-def clear_conversation(thread_id: str) -> bool:
-    """Clear a specific conversation."""
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute(
-        "DELETE FROM checkpoints WHERE thread_id = ?",
-        (thread_id,)
-    )
-    
-    deleted = cursor.rowcount > 0
-    conn.commit()
-    conn.close()
-    return deleted
-
-def get_conversation_count() -> int:
-    """Get total number of conversations."""
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT COUNT(DISTINCT thread_id) FROM checkpoints")
-    count = cursor.fetchone()[0]
-    conn.close()
-    return count
-
-# ============================================================
-# CLEAR FUNCTIONS
-# ============================================================
-
-def clear_conversation(thread_id: str) -> bool:
-    """Clear a specific conversation."""
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute(
-        "DELETE FROM checkpoints WHERE thread_id = ?",
-        (thread_id,)
-    )
-    
-    deleted = cursor.rowcount > 0
-    conn.commit()
-    conn.close()
-    return deleted
-
-def clear_all_conversations() -> int:
-    """Clear all conversations."""
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute("DELETE FROM checkpoints")
-    deleted = cursor.rowcount
-    conn.commit()
-    conn.close()
-    return deleted
-
+            
 __all__ = [
     'get_db_path',
     'list_conversations',
