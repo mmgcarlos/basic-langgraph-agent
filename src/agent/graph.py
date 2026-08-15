@@ -4,8 +4,9 @@ from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import MessagesState, StateGraph, START, END
 from langgraph.prebuilt import ToolNode
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from .tools import search_web, get_current_time
+from .memory import get_db_path
 
 # 1. Define tools
 tools = [search_web, get_current_time]
@@ -56,8 +57,9 @@ workflow.add_conditional_edges("agent", should_continue)
 workflow.add_edge("tools", "agent")
 
 # 6. Compile with memory
-memory = MemorySaver()
-graph = workflow.compile(checkpointer=memory)
+db_path = get_db_path()
+sqlMemory = SqliteSaver.from_conn_string(db_path)
+graph = workflow.compile(checkpointer=sqlMemory)
 
 # 7. Convenience functions
 def invoke_agent(query: str, thread_id: str = "default") -> str:
