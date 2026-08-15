@@ -1,24 +1,6 @@
 """Pytest configuration and shared fixtures."""
 import os
 import pytest
-import sqlite3
-from src.agent.memory import get_db_path, clear_all_conversations
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_database():
-    
-    # Clear all existing data for a clean test run
-    clear_all_conversations()
-    
-    print("✅ Database initialized and ready for tests")
-    
-    # This runs after all tests
-    yield
-    
-    # Optional: Clean up after all tests
-    # print("\n🧹 Cleaning up test database...")
-    # clear_all_conversations()
-    # print("✅ Cleanup complete")
 
 @pytest.fixture(scope="session")
 def ollama_available():
