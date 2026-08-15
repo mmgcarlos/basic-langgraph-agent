@@ -61,6 +61,7 @@ workflow.add_edge("tools", "agent")
 db_path = get_db_path()
 conn = sqlite3.connect(db_path)
 sqlMemory = SqliteSaver(conn)
+sqlMemory.setup()
 graph = workflow.compile(checkpointer=sqlMemory)
 
 # 7. Convenience functions
