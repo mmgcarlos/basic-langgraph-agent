@@ -2,7 +2,7 @@
 import os
 import pytest
 import sqlite3
-from src.agent.memory import init_database, get_db_path, clear_all_conversations
+from src.agent.memory import get_db_path, clear_all_conversations
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
