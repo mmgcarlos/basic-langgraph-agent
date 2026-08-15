@@ -40,6 +40,27 @@ def init_database():
     conn.commit()
     conn.close()
 
+def get_conversation_summary(thread_id: str) -> Dict[str, Any]:
+    """Get a summary of a conversation."""
+    messages = get_conversation_messages(thread_id)
+    
+    if not messages:
+        return {"error": "Conversation not found"}
+    
+    # Get first user message as title
+    title = "New Conversation"
+    for msg in messages:
+        if msg["role"] == "user":
+            title = msg["content"][:50] + ("..." if len(msg["content"]) > 50 else "")
+            break
+    
+    return {
+        "thread_id": thread_id,
+        "title": title,
+        "message_count": len(messages),
+        "messages": messages
+    }
+
 def list_conversations() -> List[Dict[str, Any]]:
     """List all conversations with metadata."""
     conn = get_connection()
