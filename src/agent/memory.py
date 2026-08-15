@@ -55,7 +55,7 @@ def get_conversation_messages(thread_id: str) -> List[Dict[str, Any]]:
                 "role": "assistant",
                 "content": content,
                 "type": "ai",
-                "tool_calls": bool(msg.tool_calls)
+                "tool_calls": bool(msg.tool_calls)})
             
 __all__ = [
     'get_conversation_messages',
