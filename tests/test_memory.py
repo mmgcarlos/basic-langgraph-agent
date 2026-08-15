@@ -11,7 +11,10 @@ from src.agent.memory import (
     clear_all_conversations
 )
 
-# Skip if no Ollama running
+# ============================================================
+# FIXTURES
+# ============================================================
+
 @pytest.fixture(scope="session")
 def ollama_available():
     """Check if Ollama is available."""
@@ -27,19 +30,17 @@ def test_thread():
     """Generate a unique thread ID for testing."""
     return f"test-{uuid.uuid4().hex[:8]}"
 
-# Skip all tests if Ollama is not available
-pytestmark = pytest.mark.skipif(
-    not pytest.fixture(ollama_available)(),
-    reason="Ollama not running"
-)
-
 # ============================================================
 # TESTS
 # ============================================================
 
-def test_single_conversation_memory(test_thread):
+# ✅ CORRECT: Use the fixture as a parameter
+def test_single_conversation_memory(test_thread, ollama_available):
     """Test that agent remembers within a conversation."""
-    thread = test_thread  # ← Use the fixture value directly
+    if not ollama_available:
+        pytest.skip("Ollama not running")
+    
+    thread = test_thread
     
     # Turn 1: Set name
     response1 = invoke_agent("My name is Alice", thread)
@@ -52,15 +53,18 @@ def test_single_conversation_memory(test_thread):
     # Assert - check case-insensitively
     assert "alice" in response2.lower()
 
-def test_multiple_conversations_separate(test_thread):
+def test_multiple_conversations_separate(test_thread, ollama_available):
     """Test that different conversations don't share memory."""
+    if not ollama_available:
+        pytest.skip("Ollama not running")
+    
     # Conversation 1: Alice
-    thread1 = test_thread  # ← Use fixture
+    thread1 = test_thread
     invoke_agent("My name is Alice", thread1)
     response1 = invoke_agent("What's my name?", thread1)
     
     # Conversation 2: Bob
-    thread2 = f"test-{uuid.uuid4().hex[:8]}"  # ← Create another thread
+    thread2 = f"test-{uuid.uuid4().hex[:8]}"
     invoke_agent("My name is Bob", thread2)
     response2 = invoke_agent("What's my name?", thread2)
     
@@ -72,8 +76,11 @@ def test_multiple_conversations_separate(test_thread):
     assert "bob" not in response1.lower()
     assert "alice" not in response2.lower()
 
-def test_conversation_history(test_thread):
+def test_conversation_history(test_thread, ollama_available):
     """Test retrieving conversation history."""
+    if not ollama_available:
+        pytest.skip("Ollama not running")
+    
     thread = test_thread
     
     # Add some messages
@@ -96,11 +103,14 @@ def test_conversation_history(test_thread):
     user_messages = [m for m in messages if m["role"] == "user"]
     assert len(user_messages) >= len(queries)
 
-def test_list_conversations(test_thread):
+def test_list_conversations(test_thread, ollama_available):
     """Test listing all conversations."""
+    if not ollama_available:
+        pytest.skip("Ollama not running")
+    
     # Create several conversations
-    threads = [test_thread]  # Use the fixture once
-    for i in range(2):  # Create 2 more
+    threads = [test_thread]
+    for i in range(2):
         new_thread = f"test-{uuid.uuid4().hex[:8]}"
         invoke_agent(f"Test message {i}", new_thread)
         threads.append(new_thread)
@@ -113,8 +123,11 @@ def test_list_conversations(test_thread):
     for thread in threads:
         assert thread in thread_ids
 
-def test_get_conversation_summary(test_thread):
+def test_get_conversation_summary(test_thread, ollama_available):
     """Test getting a conversation summary."""
+    if not ollama_available:
+        pytest.skip("Ollama not running")
+    
     thread = test_thread
     
     # Create a conversation with multiple messages
@@ -130,8 +143,11 @@ def test_get_conversation_summary(test_thread):
     assert len(summary["messages"]) >= 3
     assert summary["title"] is not None
 
-def test_clear_conversation(test_thread):
+def test_clear_conversation(test_thread, ollama_available):
     """Test clearing a specific conversation."""
+    if not ollama_available:
+        pytest.skip("Ollama not running")
+    
     # Create two conversations
     thread1 = test_thread
     thread2 = f"test-{uuid.uuid4().hex[:8]}"
@@ -150,8 +166,11 @@ def test_clear_conversation(test_thread):
     assert len(messages1) == 0
     assert len(messages2) > 0
 
-def test_clear_all_conversations(test_thread):
+def test_clear_all_conversations(test_thread, ollama_available):
     """Test clearing all conversations."""
+    if not ollama_available:
+        pytest.skip("Ollama not running")
+    
     # Create several conversations
     threads = []
     for i in range(3):
@@ -168,8 +187,11 @@ def test_clear_all_conversations(test_thread):
         messages = get_conversation_messages(thread)
         assert len(messages) == 0
 
-def test_memory_persistence(tmp_path, test_thread):
+def test_memory_persistence(tmp_path, test_thread, ollama_available):
     """Test that memory persists across sessions."""
+    if not ollama_available:
+        pytest.skip("Ollama not running")
+    
     # Use a temporary database for this test
     test_db = str(tmp_path / "test.db")
     os.environ["CHECKPOINT_DB"] = test_db
@@ -200,6 +222,25 @@ def test_memory_persistence(tmp_path, test_thread):
         os.environ.pop("CHECKPOINT_DB", None)
 
 # ============================================================
+# OPTIONAL: Skip all tests if Ollama not available
+# ============================================================
+
+# Option 1: Skip individual tests with pytest.mark.skipif
+# (Already implemented with the if not ollama_available checks)
+
+# Option 2: Skip entire module
+# Uncomment this to skip ALL tests if Ollama is not available
+# def pytest_collection_modifyitems(config, items):
+#     try:
+#         import requests
+#         requests.get("http://localhost:11434/api/tags", timeout=2)
+#     except:
+#         skip_ollama = pytest.mark.skip(reason="Ollama not running")
+#         for item in items:
+#             if "ollama" in item.name or "memory" in item.name:
+#                 item.add_marker(skip_ollama)
+
+# ============================================================
 # MARKED TESTS (Skip if no Tavily key)
 # ============================================================
 
@@ -207,8 +248,11 @@ def test_memory_persistence(tmp_path, test_thread):
     not os.getenv("TAVILY_API_KEY"),
     reason="TAVILY_API_KEY not set"
 )
-def test_search_with_memory(test_thread):
+def test_search_with_memory(test_thread, ollama_available):
     """Test search functionality with memory."""
+    if not ollama_available:
+        pytest.skip("Ollama not running")
+    
     thread = test_thread
     
     # Ask a search question
